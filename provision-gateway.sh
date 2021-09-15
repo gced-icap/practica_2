@@ -10,12 +10,17 @@ dn=$(hostname)
 export DEBIAN_FRONTEND=noninteractive
 
 # This is neccessary to avoid apt lock error
-echo '[INFO] Waiting for unattended upgrades to complete'
-while [ $(pgrep -cf "apt|dpkg|unattended") -gt 0 ]; do
-  sleep 0.5
-done
+#echo '[INFO] Waiting for unattended upgrades to complete'
+#while [ $(pgrep -cf "apt|dpkg|unattended") -gt 0 ]; do
+#  sleep 0.5
+#done
 # update the package cache.
-apt-get update
+#apt-get update
+
+# make sure the local apt cache is up to date.
+while true; do
+    apt-get update && break || sleep 5
+done
 
 # configure the shell.
 cat >/etc/profile.d/login.sh <<'EOF'

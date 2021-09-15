@@ -13,6 +13,11 @@ dn=$(hostname)
 # configure apt for non-interactive mode.
 export DEBIAN_FRONTEND=noninteractive
 
+# make sure the local apt cache is up to date.
+while true; do
+    apt-get update && break || sleep 5
+done
+
 # configure the network.
 ifdown vmbr0
 cat >/etc/network/interfaces <<EOF
@@ -68,27 +73,10 @@ EOF
 ifup vmbr0
 ifup eth2
 
-## install ifupdown2 (to reload the network configuration
-## from the GUI without requiring a reboot)
-# This is neccessary to avoid apt lock error
-echo '[INFO] Waiting for unattended upgrades to complete'
-while [ $(pgrep -cf "apt|dpkg|unattended") -gt 0 ]; do
-  sleep 0.5
-done
-#update packages
-apt-get update
-apt-get -y upgrade
-apt-get install -y ifupdown2
-#apply initial network changes
-if [ -e /etc/network/interfaces.new ]; then 
-  mv /etc/network/interfaces.new /etc/network/interfaces
-fi
-ifreload -c
-
-if [ "$cluster_ip" == "$cluster_network_first_node_ip" ]; then
-    # configure the keyboard.
-    echo 'keyboard: es' >>/etc/pve/datacenter.cfg
-fi
+# disable the "You do not have a valid subscription for this server. Please visit www.proxmox.com to get a list of available options."
+# message that appears each time you logon the web-ui.
+# NB this file is restored when you (re)install the pve-manager package.
+echo 'Proxmox.Utils.checked_command = function(o) { o(); };' >>/usr/share/pve-manager/js/pvemanagerlib.js
 
 # configure the shell.
 cat >/etc/profile.d/login.sh <<'EOF'
@@ -126,9 +114,33 @@ cat >/etc/motd <<'EOF'
 
 EOF
 
-# disable the "You do not have a valid subscription for this server. Please visit www.proxmox.com to get a list of available options."
-# message that appears each time you logon the web-ui.
-# NB this file is restored when you (re)install the pve-manager package.
-#echo 'Proxmox.Utils.checked_command = function(o) { o(); };' >>/usr/share/pve-manager/js/pvemanagerlib.js
-# Proxmox 6.2-12 and up
-sed -i.backup -z "s/res === null || res === undefined || \!res || res\n\t\t\t.data.status \!== 'Active'/false/g" /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js && systemctl restart pveproxy.service
+if [ "$cluster_ip" == "$cluster_network_first_node_ip" ]; then
+    # configure the keyboard.
+    echo 'keyboard: es' >>/etc/pve/datacenter.cfg
+fi
+
+## install ifupdown2 (necesario para recargar a configuración da rede 
+## desde a GUI sen reinicar a VM)
+apt-get install -y ifupdown2
+#apply initial network changes
+if [ -e /etc/network/interfaces.new ]; then
+  mv /etc/network/interfaces.new /etc/network/interfaces
+fi
+ifreload -c
+
+#enable KVM nested virtualization
+if [ -d /sys/module/kvm_intel ]; then
+  echo "options kvm-intel nested=Y" > /etc/modprobe.d/kvm-intel.conf
+  modprobe -r kvm_intel
+  modprobe kvm_intel
+elif [ -d /sys/module/kvm_amd ]; then
+  echo "options kvm-amd nested=1" > /etc/modprobe.d/kvm-amd.conf
+  modprobe -r kvm_amd
+  modprobe kvm_amd
+fi
+
+# show the proxmox web address.
+cat <<EOF
+access the proxmox web interface at:
+    https://$ip:8006/
+EOF

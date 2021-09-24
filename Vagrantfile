@@ -20,7 +20,7 @@ Vagrant.configure('2') do |config|
       vb.memory = 512
     end
     config.vm.hostname = 'gateway.icap.com'
-    config.vm.network :private_network, ip: gateway_ip, nic_type: "virtio"
+    config.vm.network :private_network, ip: gateway_ip
     config.vm.provision :shell, path: 'provision-gateway.sh', args: gateway_ip
   end
 

@@ -44,8 +44,8 @@ Vagrant.configure('2') do |config|
         vb.cpus = 1
       end
 
-      config.vm.network :private_network, ip: service_ip, auto_config: false, nic_type: "virtio"
-      config.vm.network :private_network, ip: cluster_ip, auto_config: false, nic_type: "virtio"
+      config.vm.network :private_network, ip: service_ip, auto_config: false
+      config.vm.network :private_network, ip: cluster_ip, auto_config: false
 
       config.vm.provision :shell,
         path: 'provision.sh',

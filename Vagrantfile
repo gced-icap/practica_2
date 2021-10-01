@@ -40,6 +40,7 @@ Vagrant.configure('2') do |config|
       # VirtualBox VMs con 1GB RAM e 1 CPU virtual
       config.vm.provider :virtualbox do |vb|
         vb.linked_clone = true
+        vb.default_nic_type = "82540EM"
         vb.memory = 1024
         vb.cpus = 1
       end

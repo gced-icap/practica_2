@@ -55,7 +55,7 @@ EOF
 
 cat >/etc/hosts <<EOF
 127.0.0.1 localhost.localdomain localhost
-$ip $fqdn $dn pvelocalhost
+$ip $fqdn $dn
 EOF
 sed 's,\\,\\\\,g' >/etc/issue <<'EOF'
 
@@ -70,8 +70,8 @@ EOF
 cat >>/etc/issue <<EOF
     https://$ip:8006/
 EOF
-ifup vmbr0
 ifup eth2
+ifup vmbr0
 
 # disable the "You do not have a valid subscription for this server. Please visit www.proxmox.com to get a list of available options."
 # message that appears each time you logon the web-ui.
@@ -137,6 +137,9 @@ elif [ -d /sys/module/kvm_amd ]; then
   echo "options kvm-amd nested=1" > /etc/modprobe.d/kvm-amd.conf
   modprobe -r kvm_amd
   modprobe kvm_amd
+else
+  printf 'KVM kernel module (Intel/AMD) not configured\n' >&2
+  exit -127
 fi
 
 # show the proxmox web address.

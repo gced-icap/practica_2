@@ -55,7 +55,7 @@ EOF
 
 cat >/etc/hosts <<EOF
 127.0.0.1 localhost.localdomain localhost
-$ip $fqdn $dn
+$ip $fqdn $dn pvelocalhost
 EOF
 sed 's,\\,\\\\,g' >/etc/issue <<'EOF'
 
@@ -70,6 +70,7 @@ EOF
 cat >>/etc/issue <<EOF
     https://$ip:8006/
 EOF
+ifup eth1
 ifup eth2
 ifup vmbr0
 
@@ -141,9 +142,3 @@ else
   printf 'KVM kernel module (Intel/AMD) not configured\n' >&2
   exit -127
 fi
-
-# show the proxmox web address.
-cat <<EOF
-access the proxmox web interface at:
-    https://$ip:8006/
-EOF

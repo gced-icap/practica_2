@@ -45,8 +45,8 @@ Vagrant.configure("2") do |config|
     config.vm.define name do |pve|
 
       # Box de PROXMOX
-      pve.vm.box = "xoan/proxmox-ve_6.4"
-      pve.vm.box_version = "1.1"
+      pve.vm.box = "xoan/proxmox-ve_8.0"
+      # pve.vm.box_version = "1.0"
       pve.vm.hostname = fqdn
 
       # VirtualBox VMs con 1GB RAM e 1 CPU virtual
@@ -57,9 +57,12 @@ Vagrant.configure("2") do |config|
         vb.default_nic_type = "82540EM"
       end
 
+      # Rede para conectar co servidor
       pve.vm.network "private_network", ip: service_ip, auto_config: false
+      # Rede de heartbeat
       pve.vm.network "private_network", ip: cluster_ip, auto_config: false
 
+      # script de aprovisionamento
       pve.vm.provision "shell",
         path: "provision.sh",
         args: [
@@ -69,6 +72,10 @@ Vagrant.configure("2") do |config|
           cluster_network,
           cluster_ip
         ]
+      pve.vm.provision :reload
+
+      # info de conexion a interface de Proxmox
+      pve.vm.provision "shell", path: "summary.sh", args: service_ip, run: "always"
     end
   end
 

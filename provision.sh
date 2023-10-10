@@ -139,6 +139,6 @@ elif [ -d /sys/module/kvm_amd ]; then
   modprobe -r kvm_amd
   modprobe kvm_amd
 else
-  printf 'KVM kernel module (Intel/AMD) not configured\n' >&2
-  exit -127
+  echo "KVM kernel module not configured" | tee /vagrant/kvm-nested.log
+  cat /proc/cpuinfo >> /vagrant/kvm-nested.log
 fi

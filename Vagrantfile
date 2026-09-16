@@ -6,7 +6,7 @@
 ENV["VAGRANT_NO_PARALLEL"] = "yes"
 
 # require a Vagrant recent version
-Vagrant.require_version ">= 2.2.0"
+Vagrant.require_version ">= 2.4.0"
 
 number_of_nodes = 2
 service_network_first_node_ip = "10.10.10.2"
@@ -21,14 +21,16 @@ Vagrant.configure("2") do |config|
 
   # disable auto updates
   config.vm.box_check_update = false
-  config.vbguest.auto_update = false
 
   # Configuracion do gateway
   config.vm.define "gateway" do |gw|
     # Alpine Linux box
-    gw.vm.box = "boxomatic/alpine-3.16"
+    gw.vm.box = "rreye/alpine-3.23"
+    gw.vm.box_version = "20260526"
     gw.vm.provider "virtualbox" do |vb|
       vb.memory = 512
+      # Do not check for guest additions
+      vb.check_guest_additions = false
     end
     gw.vm.hostname = "gateway.icap.com"
     gw.vm.network "private_network", ip: gateway_ip
@@ -46,7 +48,7 @@ Vagrant.configure("2") do |config|
 
       # Box de PROXMOX
       pve.vm.box = "xoan/proxmox-ve_8.0"
-      # pve.vm.box_version = "1.0"
+      # pve.vm.box_version = "1.1"
       pve.vm.hostname = fqdn
 
       # VirtualBox VMs con 1GB RAM e 1 CPU virtual
@@ -55,6 +57,8 @@ Vagrant.configure("2") do |config|
         vb.cpus = 1
         vb.linked_clone = true
         vb.default_nic_type = "82540EM"
+        # Do not check for guest additions
+        vb.check_guest_additions = false
       end
 
       # Rede para conectar co servidor

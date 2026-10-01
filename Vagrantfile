@@ -17,6 +17,10 @@ require "ipaddr"
 service_ip_addr = IPAddr.new service_network_first_node_ip
 cluster_ip_addr = IPAddr.new cluster_network_first_node_ip
 
+# Detectar se o host é Windows
+IS_WINDOWS = Gem.win_platform?
+HOST_IO_CACHE = IS_WINDOWS ? "on" : "off"
+
 Vagrant.configure("2") do |config|
 
   # disable auto updates
@@ -59,6 +63,7 @@ Vagrant.configure("2") do |config|
         vb.default_nic_type = "82540EM"
         # Do not check for guest additions
         vb.check_guest_additions = false
+        vb.customize ["storagectl", :id, "--name", "SATA Controller", "--hostiocache", HOST_IO_CACHE]
       end
 
       # Rede para conectar co servidor
